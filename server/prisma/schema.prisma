@@ -1,0 +1,138 @@
+// Mafia Game Database Schema
+// This schema defines the persistent data structure for user accounts and game history
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User accounts (optional feature for tracking stats)
+model User {
+  id        String   @id @default(uuid())
+  username  String   @unique
+  email     String?  @unique
+  password  String?  // Hashed password (null for anonymous users)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  stats         UserStats?
+  gameHistories PlayerGameHistory[]
+
+  @@index([username])
+  @@index([email])
+}
+
+// User statistics
+model UserStats {
+  id             String @id @default(uuid())
+  userId         String @unique
+  user           User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // General stats
+  gamesPlayed    Int    @default(0)
+  gamesWon       Int    @default(0)
+  gamesLost      Int    @default(0)
+
+  // Role stats
+  timesVillager  Int    @default(0)
+  timesMafia     Int    @default(0)
+  timesDoctor    Int    @default(0)
+  timesDetective Int    @default(0)
+
+  // Performance stats
+  timesKilledNight   Int @default(0)
+  timesVotedOut      Int @default(0)
+  timesSurvived      Int @default(0)
+  correctVotes       Int @default(0) // Voted for mafia
+  incorrectVotes     Int @default(0) // Voted for villagers
+
+  updatedAt      DateTime @updatedAt
+
+  @@index([userId])
+}
+
+// Game history - stores completed games
+model GameHistory {
+  id           String   @id @default(uuid())
+  roomCode     String
+
+  // Game metadata
+  winner       String   // 'mafia' | 'villagers'
+  totalRounds  Int
+  duration     Int      // Duration in seconds
+
+  // Player data
+  totalPlayers Int
+  mafiaCount   Int
+  villagerCount Int
+
+  // Timestamps
+  startedAt    DateTime
+  endedAt      DateTime @default(now())
+
+  players      PlayerGameHistory[]
+  events       GameEvent[]
+
+  @@index([roomCode])
+  @@index([endedAt])
+}
+
+// Individual player performance in a game
+model PlayerGameHistory {
+  id            String      @id @default(uuid())
+  gameId        String
+  game          GameHistory @relation(fields: [gameId], references: [id], onDelete: Cascade)
+
+  userId        String?     // Null for anonymous players
+  user          User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  playerName    String
+  role          String      // 'mafia' | 'villager' | 'doctor' | 'detective'
+
+  // Performance
+  survived      Boolean     // Did they survive to the end?
+  killedRound   Int?        // Which round they died (null if survived)
+  killedBy      String?     // 'mafia' | 'vote' | null
+
+  won           Boolean     // Did their team win?
+
+  @@index([gameId])
+  @@index([userId])
+}
+
+// Game events for replay/analysis
+model GameEvent {
+  id        String      @id @default(uuid())
+  gameId    String
+  game      GameHistory @relation(fields: [gameId], references: [id], onDelete: Cascade)
+
+  round     Int
+  phase     String      // 'night' | 'day' | 'voting'
+  eventType String      // 'kill' | 'save' | 'investigate' | 'vote' | 'elimination'
+
+  actor     String?     // Player who performed action
+  target    String?     // Target of action
+  result    String?     // Result/outcome
+
+  timestamp DateTime    @default(now())
+
+  @@index([gameId])
+  @@index([round])
+}
+
+// Session tokens for authentication
+model Session {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([token])
+  @@index([userId])
+  @@index([expiresAt])
+}
