@@ -1,0 +1,67 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-mafia-darker text-mafia-light;
+    @apply min-h-screen;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+      'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+      sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply px-4 py-2 rounded-lg font-medium transition-colors;
+    @apply focus:outline-none focus:ring-2 focus:ring-offset-2;
+  }
+
+  .btn-primary {
+    @apply bg-mafia-red text-white hover:bg-red-700;
+    @apply focus:ring-mafia-red;
+  }
+
+  .btn-secondary {
+    @apply bg-gray-600 text-white hover:bg-gray-700;
+    @apply focus:ring-gray-500;
+  }
+
+  .btn-success {
+    @apply bg-green-600 text-white hover:bg-green-700;
+    @apply focus:ring-green-500;
+  }
+
+  .input {
+    @apply px-4 py-2 rounded-lg border;
+    @apply bg-mafia-dark border-gray-600 text-mafia-light;
+    @apply focus:outline-none focus:ring-2 focus:ring-mafia-red focus:border-transparent;
+    @apply placeholder-gray-500;
+  }
+
+  .card {
+    @apply bg-mafia-dark rounded-lg shadow-lg p-6;
+    @apply border border-gray-700;
+  }
+
+  .role-card {
+    @apply card text-center;
+    @apply transform transition-transform hover:scale-105;
+  }
+
+  .player-card {
+    @apply bg-mafia-dark rounded-lg p-4 border border-gray-700;
+    @apply transition-all;
+  }
+
+  .player-card.selected {
+    @apply border-mafia-red bg-red-900 bg-opacity-20;
+  }
+
+  .player-card.dead {
+    @apply opacity-50 grayscale;
+  }
+}
